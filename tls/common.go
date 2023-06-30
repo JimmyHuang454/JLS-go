@@ -783,6 +783,10 @@ type Config struct {
 	// autoSessionTicketKeys is like sessionTicketKeys but is owned by the
 	// auto-rotation logic. See Config.ticketKeys.
 	autoSessionTicketKeys []ticketKey
+
+	UseJLS bool
+	JLSPWD []byte
+	JLSIV  []byte
 }
 
 const (

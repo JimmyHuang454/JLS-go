@@ -16,6 +16,7 @@ func TestFakeRandom(t *testing.T) {
 	assert.NotEqual(t, fakeRandom1.IV, fakeRandom3.IV)
 
 	err := fakeRandom1.Build()
+	assert.Equal(t, len(fakeRandom1.Random), 32)
 	assert.Nil(t, err)
 
 	isValid, err := fakeRandom2.Check(fakeRandom1.Random)

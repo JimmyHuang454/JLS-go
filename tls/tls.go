@@ -168,7 +168,14 @@ func dial(ctx context.Context, netDialer *net.Dialer, network, addr string, conf
 // the zero configuration; see the documentation of Config
 // for the defaults.
 func Dial(network, addr string, config *Config) (*Conn, error) {
-	return DialWithDialer(new(net.Dialer), network, addr, config)
+	client, err := DialWithDialer(new(net.Dialer), network, addr, config)
+
+	if err == nil && client.config.UseJLS && !client.IsJLS {
+		// it is a valid TLS Client but Not JLS,
+		// so we must act like a normal http request at here
+		return client, errors.New("not JLS")
+	}
+	return client, err
 }
 
 // Dialer dials TLS connections given a configuration and a Dialer for the

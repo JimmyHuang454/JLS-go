@@ -25,6 +25,8 @@ import (
 // A Conn represents a secured connection.
 // It implements the net.Conn interface.
 type Conn struct {
+	IsJLS bool
+
 	// constant
 	conn        net.Conn
 	isClient    bool
