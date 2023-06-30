@@ -9,6 +9,11 @@ import (
 )
 
 func TestAESGCM(t *testing.T) {
+	// check len
+	cipherTextAndMac, err := Encrypt([]byte("key"), []byte("key"), []byte("key"))
+	assert.NotNil(t, err)
+	assert.Empty(t, cipherTextAndMac)
+
 	key := sha256.New()
 	key.Write([]byte("key"))
 	plainText := []byte("cipherText")
@@ -16,7 +21,7 @@ func TestAESGCM(t *testing.T) {
 	nonce := sha512.New()
 	nonce.Write([]byte("nonce"))
 
-	cipherTextAndMac, err := Encrypt(nonce.Sum(nil), plainText, key.Sum(nil))
+	cipherTextAndMac, err = Encrypt(nonce.Sum(nil), plainText, key.Sum(nil))
 	assert.NotEmpty(t, cipherTextAndMac)
 	assert.Nil(t, err)
 
