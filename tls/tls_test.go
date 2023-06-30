@@ -12,7 +12,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"internal/testenv"
+	"github.com/jls-go/internal/testenv"
 	"io"
 	"math"
 	"net"
@@ -505,23 +505,23 @@ func TestTLSUniqueMatches(t *testing.T) {
 func TestVerifyHostname(t *testing.T) {
 	testenv.MustHaveExternalNetwork(t)
 
-	c, err := Dial("tcp", "www.google.com:https", nil)
+	c, err := Dial("tcp", "www.baidu.com:https", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := c.VerifyHostname("www.google.com"); err != nil {
-		t.Fatalf("verify www.google.com: %v", err)
+	if err := c.VerifyHostname("www.baidu.com"); err != nil {
+		t.Fatalf("verify www.baidu.com: %v", err)
 	}
-	if err := c.VerifyHostname("www.yahoo.com"); err == nil {
-		t.Fatalf("verify www.yahoo.com succeeded")
+	if err := c.VerifyHostname("www.qq.com"); err == nil {
+		t.Fatalf("verify www.qq.com succeeded")
 	}
 
-	c, err = Dial("tcp", "www.google.com:https", &Config{InsecureSkipVerify: true})
+	c, err = Dial("tcp", "www.baidu.com:https", &Config{InsecureSkipVerify: true})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := c.VerifyHostname("www.google.com"); err == nil {
-		t.Fatalf("verify www.google.com succeeded with InsecureSkipVerify=true")
+	if err := c.VerifyHostname("www.baidu.com"); err == nil {
+		t.Fatalf("verify www.baidu.com succeeded with InsecureSkipVerify=true")
 	}
 }
 

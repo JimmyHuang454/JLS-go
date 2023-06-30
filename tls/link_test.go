@@ -6,7 +6,7 @@ package tls
 
 import (
 	"bytes"
-	"internal/testenv"
+	"github.com/jls-go/internal/testenv"
 	"os"
 	"os/exec"
 	"path/filepath"

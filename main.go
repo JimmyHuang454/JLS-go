@@ -10,28 +10,31 @@ func main() {
 	log.SetFlags(log.Lshortfile)
 
 	conf := &tls.Config{
-		//InsecureSkipVerify: true,
+		InsecureSkipVerify: false,
 	}
 
-	conn, err := tls.Dial("tcp", "127.0.0.1:443", conf)
+	conn, err := tls.Dial("tcp", "uif03.top:443", conf)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 	defer conn.Close()
 
-	n, err := conn.Write([]byte("hello\n"))
+	n, err := conn.Write([]byte("GET http://uif03.top HTTP/1.1\r\nHost: uif03.top\r\n\r\n"))
 	if err != nil {
 		log.Println(n, err)
 		return
 	}
 
-	buf := make([]byte, 100)
-	n, err = conn.Read(buf)
-	if err != nil {
-		log.Println(n, err)
-		return
-	}
+	buf := make([]byte, 2000)
+	for true {
+		n, err = conn.Read(buf)
+		if err != nil {
+			log.Println(n, err)
+			return
+		}
 
-	println(string(buf[:n]))
+		println(string(buf[:n]))
+		conn.Close()
+	}
 }
