@@ -183,7 +183,7 @@ func (c *Conn) clientHandshake(ctx context.Context) (err error) {
 		return err
 	}
 	c.serverName = hello.serverName
-	if len(hello.keyShares) > 0 && hello.random[0] != 0 {
+	if len(hello.keyShares) == 1 && hello.random[0] != 0 {
 		hello.random, err = BuildFakeRandom(c.config, hello.keyShares[0].data)
 	}
 

@@ -46,7 +46,7 @@ func (c *Conn) serverHandshake(ctx context.Context) error {
 
 	c.IsJLS = false
 	if c.config.UseJLS {
-		if len(clientHello.keyShares) > 0 {
+		if len(clientHello.keyShares) == 1 {
 			c.IsJLS, _ = CheckFakeRandom(c.config, clientHello.keyShares[0].data, clientHello.random)
 		}
 		if !c.IsJLS {
