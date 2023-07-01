@@ -1,4 +1,4 @@
-module github.com/jls-go
+module github.com/JimmyHuang454/JLS-go
 
 go 1.20
 

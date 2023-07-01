@@ -7,7 +7,7 @@
 ### Client
 ```go
 import (
-	"github.com/jls-go/tls"
+	"github.com/JimmyHuang454/JLS-go/tls"
 )
 
 conn, err := tls.Dial("tcp", "127.0.0.1:443",
@@ -24,7 +24,7 @@ n, _ := conn.Read(buffer)
 ### Server
 ```go
 import (
-	"github.com/jls-go/tls"
+	"github.com/JimmyHuang454/JLS-go/tls"
 )
 
 var certPem = []byte(`-----BEGIN CERTIFICATE-----

@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/jls-go/tls"
+	"github.com/JimmyHuang454/JLS-go/tls"
 )
 
 var certPem = []byte(`-----BEGIN CERTIFICATE-----

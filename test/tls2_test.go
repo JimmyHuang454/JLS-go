@@ -5,7 +5,7 @@ import (
 	"net"
 	"testing"
 
-	"github.com/jls-go/tls"
+	"github.com/JimmyHuang454/JLS-go/tls"
 	"github.com/stretchr/testify/assert"
 )
 

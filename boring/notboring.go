@@ -9,7 +9,7 @@ package boring
 import (
 	"crypto"
 	"crypto/cipher"
-	"github.com/jls-go/boring/sig"
+	"github.com/JimmyHuang454/JLS-go/boring/sig"
 	"hash"
 )
 

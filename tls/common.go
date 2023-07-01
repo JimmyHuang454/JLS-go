@@ -24,7 +24,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/jls-go/jls"
+	"github.com/JimmyHuang454/JLS-go/jls"
 )
 
 const (
