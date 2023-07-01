@@ -789,6 +789,8 @@ type Config struct {
 	UseJLS bool
 	JLSPWD []byte
 	JLSIV  []byte
+	
+	ForwardClientHello []byte
 }
 
 func BuildFakeRandom(config *Config, keyShare []byte) ([]byte, error) {

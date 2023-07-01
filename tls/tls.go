@@ -67,7 +67,15 @@ func (l *listener) Accept() (net.Conn, error) {
 	if err != nil {
 		return nil, err
 	}
-	return Server(c, l.config), nil
+	s := Server(c, l.config)
+	if s.config.UseJLS {
+		err := s.Handshake()
+		if err != nil {
+			// forward at here.
+			return s, err
+		}
+	}
+	return s, nil
 }
 
 // NewListener creates a Listener which accepts connections from an inner

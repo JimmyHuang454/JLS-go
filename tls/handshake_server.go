@@ -50,7 +50,7 @@ func (c *Conn) serverHandshake(ctx context.Context) error {
 			c.IsJLS, _ = CheckFakeRandom(c.config, clientHello.keyShares[0].data, clientHello.random)
 		}
 		if !c.IsJLS {
-			// forward at here.
+			c.config.ForwardClientHello = clientHello.raw
 			return errors.New("Wrong JLS")
 		}
 	}

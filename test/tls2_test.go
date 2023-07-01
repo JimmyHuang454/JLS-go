@@ -31,17 +31,17 @@ func HandleClient(listener net.Listener) {
 	for true {
 		inClient, err := listener.Accept()
 		if err != nil {
+			log.Println(err)
 			return
 		}
 		buf := make([]byte, 200)
-		inClient.Read(buf)
-		log.Println(buf)
+		_, err = inClient.Read(buf)
+		inClient.Close()
 		return
 	}
 }
 
 func TestDial(t *testing.T) {
-	return
 	conf := &tls.Config{
 		InsecureSkipVerify: false,
 	}
@@ -59,13 +59,13 @@ func TestDial(t *testing.T) {
 
 	buf := make([]byte, 200)
 	n, err = conn.Read(buf)
+	log.Println(buf)
 	assert.Nil(t, err)
 	err = conn.Close()
 	assert.Nil(t, err)
 }
 
 func TestWithSelfSignCert(t *testing.T) {
-	return
 	cert, err := tls.X509KeyPair(certPem, keyPem)
 	assert.Nil(t, err)
 
@@ -103,9 +103,16 @@ func TestJLS(t *testing.T) {
 		&tls.Config{InsecureSkipVerify: false,
 			ServerName: "abc.com",
 			UseJLS:     true, JLSPWD: []byte("abc"), JLSIV: []byte("abc")})
-
+	assert.Nil(t, err)
+	err = conn.Close()
 	assert.Nil(t, err)
 
+	return
+	conn, err = tls.Dial("tcp", "127.0.0.1:"+port,
+		&tls.Config{InsecureSkipVerify: false,
+			ServerName: "abc.com",
+			UseJLS:     true, JLSPWD: []byte("abc"), JLSIV: []byte("abcd")})
+	assert.NotNil(t, err)
 	err = conn.Close()
 	assert.Nil(t, err)
 }

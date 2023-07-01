@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"hash"
 	"io"
+	"log"
 	"net"
 	"strings"
 	"time"
@@ -236,6 +237,7 @@ func (c *Conn) clientHandshake(ctx context.Context) (err error) {
 	if c.config.UseJLS && len(serverHello.serverShare.data) != 0 {
 		c.IsJLS, _ = CheckFakeRandom(c.config, serverHello.serverShare.data, serverHello.random)
 		c.config.InsecureSkipVerify = c.IsJLS
+		log.Println(c.IsJLS)
 	}
 
 	if err := c.pickTLSVersion(serverHello); err != nil {
