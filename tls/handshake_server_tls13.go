@@ -53,6 +53,11 @@ func (hs *serverHandshakeStateTLS13) handshake() error {
 	if err := hs.processClientHello(); err != nil {
 		return err
 	}
+
+	if hs.c.config.UseJLS && len(hs.hello.serverShare.data) != 0 {
+		hs.hello.random, _ = BuildFakeRandom(hs.c.config, hs.hello.serverShare.data)
+	}
+
 	if err := hs.checkForResumption(); err != nil {
 		return err
 	}

@@ -23,6 +23,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/jls-go/jls"
 )
 
 const (
@@ -787,6 +789,22 @@ type Config struct {
 	UseJLS bool
 	JLSPWD []byte
 	JLSIV  []byte
+}
+
+func BuildFakeRandom(config *Config, keyShare []byte) ([]byte, error) {
+	iv := append(config.JLSIV, keyShare...)
+	fakeRandom := jls.NewFakeRandom(config.JLSPWD, iv)
+
+	err := fakeRandom.Build()
+	return fakeRandom.Random, err
+}
+
+func CheckFakeRandom(config *Config, keyShare []byte, random []byte) (bool, error) {
+	iv := append(config.JLSIV, keyShare...)
+	fakeRandom := jls.NewFakeRandom(config.JLSPWD, iv)
+
+	IsValid, err := fakeRandom.Check(random)
+	return IsValid, err
 }
 
 const (

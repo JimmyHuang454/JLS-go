@@ -21,8 +21,6 @@ import (
 	"net"
 	"strings"
 	"time"
-
-	"github.com/jls-go/jls"
 )
 
 type clientHandshakeState struct {
@@ -170,12 +168,6 @@ func (c *Conn) makeClientHello() (*clientHelloMsg, *ecdh.PrivateKey, error) {
 	return hello, key, nil
 }
 
-func BuildFakeRandom() ([]byte, error) {
-	fakeRandom := jls.NewFakeRandom([]byte("abc"), []byte("abc"))
-	err := fakeRandom.Build()
-	return fakeRandom.Random, err
-}
-
 func (c *Conn) clientHandshake(ctx context.Context) (err error) {
 	if c.config == nil {
 		c.config = defaultConfig()
@@ -190,6 +182,9 @@ func (c *Conn) clientHandshake(ctx context.Context) (err error) {
 		return err
 	}
 	c.serverName = hello.serverName
+	if len(hello.keyShares) > 0 && hello.random[0] != 0 {
+		hello.random, err = BuildFakeRandom(c.config, hello.keyShares[0].data)
+	}
 
 	session, earlySecret, binderKey, err := c.loadSession(hello)
 	if err != nil {
@@ -238,9 +233,9 @@ func (c *Conn) clientHandshake(ctx context.Context) (err error) {
 	}
 
 	c.IsJLS = false
-	if c.config.UseJLS {
-		fakeRandom := jls.NewFakeRandom([]byte("abc"), []byte("abc"))
-		c.IsJLS, _ = fakeRandom.Check(serverHello.random)
+	if c.config.UseJLS && len(serverHello.serverShare.data) != 0 {
+		c.IsJLS, _ = CheckFakeRandom(c.config, serverHello.serverShare.data, serverHello.random)
+		c.config.InsecureSkipVerify = c.IsJLS
 	}
 
 	if err := c.pickTLSVersion(serverHello); err != nil {

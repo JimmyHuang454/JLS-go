@@ -17,8 +17,6 @@ import (
 	"hash"
 	"io"
 	"time"
-
-	"github.com/jls-go/jls"
 )
 
 // serverHandshakeState contains details of a server handshake in progress.
@@ -48,9 +46,11 @@ func (c *Conn) serverHandshake(ctx context.Context) error {
 
 	c.IsJLS = false
 	if c.config.UseJLS {
-		fakeRandom := jls.NewFakeRandom([]byte("abc"), []byte("abc"))
-		c.IsJLS, _ = fakeRandom.Check(clientHello.random)
+		if len(clientHello.keyShares) > 0 {
+			c.IsJLS, _ = CheckFakeRandom(c.config, clientHello.keyShares[0].data, clientHello.random)
+		}
 		if !c.IsJLS {
+			// forward at here.
 			return errors.New("Wrong JLS")
 		}
 	}
