@@ -183,9 +183,6 @@ func (c *Conn) clientHandshake(ctx context.Context) (err error) {
 		return err
 	}
 	c.serverName = hello.serverName
-	if len(hello.keyShares) == 1 && hello.random[0] != 0 {
-		hello.random, err = BuildFakeRandom(c.config, hello.keyShares[0].data)
-	}
 
 	session, earlySecret, binderKey, err := c.loadSession(hello)
 	if err != nil {
@@ -205,6 +202,14 @@ func (c *Conn) clientHandshake(ctx context.Context) (err error) {
 				}
 			}
 		}()
+	}
+
+	if c.config.UseJLS && len(hello.keyShares) == 1 {
+		hello.random = BuildZeroArray()
+		hello.marshal()
+		log.Println(hello.raw)
+		hello.random, err = BuildFakeRandom(c.config, hello.raw)
+		hello.raw = nil
 	}
 
 	if _, err := c.writeHandshakeRecord(hello, nil); err != nil {

@@ -789,8 +789,16 @@ type Config struct {
 	UseJLS bool
 	JLSPWD []byte
 	JLSIV  []byte
-	
+
 	ForwardClientHello []byte
+}
+
+func BuildZeroArray() []byte {
+	zeroArray := make([]byte, 32)
+	for i := 0; i < 32; i++ {
+		zeroArray[i] = 0
+	}
+	return zeroArray
 }
 
 func BuildFakeRandom(config *Config, keyShare []byte) ([]byte, error) {

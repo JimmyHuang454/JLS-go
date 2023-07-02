@@ -16,6 +16,7 @@ import (
 	"fmt"
 	"hash"
 	"io"
+	"log"
 	"time"
 )
 
@@ -46,8 +47,21 @@ func (c *Conn) serverHandshake(ctx context.Context) error {
 
 	c.IsJLS = false
 	if c.config.UseJLS {
+
 		if len(clientHello.keyShares) == 1 {
-			c.IsJLS, _ = CheckFakeRandom(c.config, clientHello.keyShares[0].data, clientHello.random)
+			tempRandom := clientHello.random
+
+			// set to zero
+			clientHello.random = BuildZeroArray()
+			clientHello.raw = nil
+			clientHello.marshal()
+
+			c.IsJLS, _ = CheckFakeRandom(c.config, clientHello.raw, tempRandom)
+
+			// restore
+			clientHello.raw = nil
+			clientHello.random = tempRandom
+			clientHello.marshal()
 		}
 		if !c.IsJLS {
 			c.config.ForwardClientHello = clientHello.raw

@@ -54,10 +54,6 @@ func (hs *serverHandshakeStateTLS13) handshake() error {
 		return err
 	}
 
-	if hs.c.config.UseJLS && len(hs.hello.serverShare.data) != 0 {
-		hs.hello.random, _ = BuildFakeRandom(hs.c.config, hs.hello.serverShare.data)
-	}
-
 	if err := hs.checkForResumption(); err != nil {
 		return err
 	}
@@ -65,6 +61,20 @@ func (hs *serverHandshakeStateTLS13) handshake() error {
 		return err
 	}
 	c.buffering = true
+
+	if hs.c.config.UseJLS && len(hs.hello.serverShare.data) != 0 {
+		tempRandom := hs.hello.random
+		hs.hello.random = BuildZeroArray()
+		hs.hello.raw = nil
+		hs.hello.marshal()
+
+		hs.hello.random, _ = BuildFakeRandom(hs.c.config, hs.hello.raw)
+
+		hs.hello.random = tempRandom
+		hs.hello.raw = nil
+		hs.hello.marshal()
+	}
+
 	if err := hs.sendServerParameters(); err != nil {
 		return err
 	}
