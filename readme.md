@@ -4,7 +4,7 @@
 ## 用法
 跟`crypto/tls`标准库一样，但多了一些选项。
 
-选项中可以自定义是否开启 0-RTT（默认关闭），比如说需要 quic 的 0-RTT，那么可以设置 SessionTicketsDisabled 为 false。需要特别注意，0-RTT 具有安全问题，不保证前向安全，不保证不会被重放攻击和特征识别，优点就是加上 quic 传输层，延迟很低。
+选项中可以自定义是否开启 0-RTT（默认关闭），比如说需要 quic 的 0-RTT，那么可以设置 SessionTicketsDisabled 为 false。需要特别注意，0-RTT 具有安全问题，不保证前向安全，不保证不会被重放攻击和特征识别，优点就是加上 quic 传输层，延迟很低，而且数据是加密的。
 
 ### Client
 ```go

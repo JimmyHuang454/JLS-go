@@ -14,6 +14,7 @@ import (
 	"errors"
 	"hash"
 	"io"
+	"log"
 	"time"
 )
 
@@ -63,14 +64,12 @@ func (hs *serverHandshakeStateTLS13) handshake() error {
 	c.buffering = true
 
 	if hs.c.config.UseJLS && len(hs.hello.serverShare.data) != 0 {
-		tempRandom := hs.hello.random
 		hs.hello.random = BuildZeroArray()
 		hs.hello.raw = nil
 		hs.hello.marshal()
 
 		hs.hello.random, _ = BuildFakeRandom(hs.c.config, hs.hello.raw)
 
-		hs.hello.random = tempRandom
 		hs.hello.raw = nil
 		hs.hello.marshal()
 	}

@@ -204,10 +204,9 @@ func (c *Conn) clientHandshake(ctx context.Context) (err error) {
 		}()
 	}
 
-	if c.config.UseJLS && len(hello.keyShares) == 1 {
+	if c.config.UseJLS {
 		hello.random = BuildZeroArray()
 		hello.marshal()
-		log.Println(hello.raw)
 		hello.random, err = BuildFakeRandom(c.config, hello.raw)
 		hello.raw = nil
 	}
@@ -240,9 +239,17 @@ func (c *Conn) clientHandshake(ctx context.Context) (err error) {
 
 	c.IsJLS = false
 	if c.config.UseJLS && len(serverHello.serverShare.data) != 0 {
-		c.IsJLS, _ = CheckFakeRandom(c.config, serverHello.serverShare.data, serverHello.random)
+		tempRandom := serverHello.random
+		serverHello.random = BuildZeroArray()
+		serverHello.raw = nil
+		serverHello.marshal()
+
+		c.IsJLS, _ = CheckFakeRandom(c.config, serverHello.raw, tempRandom)
 		c.config.InsecureSkipVerify = c.IsJLS
-		log.Println(c.IsJLS)
+
+		serverHello.raw = nil
+		serverHello.random = tempRandom
+		serverHello.marshal()
 	}
 
 	if err := c.pickTLSVersion(serverHello); err != nil {
