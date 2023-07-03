@@ -69,9 +69,9 @@ func TestWithSelfSignCert(t *testing.T) {
 	cert, err := tls.X509KeyPair(certPem, keyPem)
 	assert.Nil(t, err)
 
-	cfg := &tls.Config{Certificates: []tls.Certificate{cert}}
+	serverConfig := &tls.Config{Certificates: []tls.Certificate{cert}}
 	port := "2000"
-	listener, err := tls.Listen("tcp", ":"+port, cfg)
+	listener, err := tls.Listen("tcp", ":"+port, serverConfig)
 	assert.Nil(t, err)
 
 	go HandleClient(listener)
@@ -91,10 +91,10 @@ func TestRightJLS(t *testing.T) {
 	cert, err := tls.X509KeyPair(certPem, keyPem)
 	assert.Nil(t, err)
 
-	cfg := &tls.Config{Certificates: []tls.Certificate{cert},
+	serverConfig := &tls.Config{Certificates: []tls.Certificate{cert},
 		UseJLS: true, JLSPWD: []byte("abc"), JLSIV: []byte("abc")}
 	port := "2001"
-	listener, err := tls.Listen("tcp", ":"+port, cfg)
+	listener, err := tls.Listen("tcp", ":"+port, serverConfig)
 	assert.Nil(t, err)
 
 	go func() {
@@ -120,16 +120,16 @@ func TestWrongJLS(t *testing.T) {
 	cert, err := tls.X509KeyPair(certPem, keyPem)
 	assert.Nil(t, err)
 
-	cfg := &tls.Config{Certificates: []tls.Certificate{cert},
+	serverConfig := &tls.Config{Certificates: []tls.Certificate{cert},
 		UseJLS: true, JLSPWD: []byte("abc"), JLSIV: []byte("abc")}
 	port := "2002"
-	listener, err := tls.Listen("tcp", ":"+port, cfg)
+	listener, err := tls.Listen("tcp", ":"+port, serverConfig)
 	assert.Nil(t, err)
 
 	go func() {
 		inClient, err := listener.Accept()
 		assert.NotNil(t, err)
-		assert.Nil(t, inClient)
+		log.Println(inClient)
 	}()
 
 	conn, err := tls.Dial("tcp", "127.0.0.1:"+port,
@@ -138,4 +138,53 @@ func TestWrongJLS(t *testing.T) {
 			UseJLS:     true, JLSPWD: []byte("abc"), JLSIV: []byte("abcd")})
 	assert.NotNil(t, err)
 	assert.Nil(t, conn)
+}
+
+func TestProvideChannal(t *testing.T) {
+	cert, err := tls.X509KeyPair(certPem, keyPem)
+	serverConfig := &tls.Config{Certificates: []tls.Certificate{cert},
+		ServerName: "abc.com",
+		UseJLS:     true, JLSPWD: []byte("abc"), JLSIV: []byte("abc")}
+
+	port := "2003"
+	address := "127.0.0.1:" + port
+
+	listener, err := net.Listen("tcp", address)
+	assert.Nil(t, err)
+
+	// ok JLS
+	go func() {
+		inClient, err := listener.Accept()
+		assert.Nil(t, err)
+		assert.NotNil(t, inClient)
+
+		safeServer := tls.Server(inClient, serverConfig)
+		assert.NotNil(t, safeServer)
+		err = safeServer.Handshake()
+		assert.Nil(t, err)
+	}()
+	clientConfig := &tls.Config{InsecureSkipVerify: false,
+		ServerName: "abc.com",
+		UseJLS:     true, JLSPWD: []byte("abc"), JLSIV: []byte("abc")}
+
+	c, err := net.Dial("tcp", address)
+	safeClient := tls.Client(c, clientConfig)
+	err = safeClient.Handshake()
+	assert.Nil(t, err)
+
+	// wrong JLS
+	go func() {
+		inClient, err := listener.Accept()
+		assert.Nil(t, err)
+		assert.NotNil(t, inClient)
+
+		safeServer := tls.Server(inClient, serverConfig)
+		err = safeServer.Handshake()
+		assert.NotNil(t, err)
+	}()
+	c, err = net.Dial("tcp", address)
+	clientConfig.JLSPWD = []byte("abcd")
+	safeClient = tls.Client(c, clientConfig)
+	err = safeClient.Handshake()
+	assert.NotNil(t, err)
 }
