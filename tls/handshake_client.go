@@ -18,7 +18,6 @@ import (
 	"fmt"
 	"hash"
 	"io"
-	"log"
 	"net"
 	"strings"
 	"time"

@@ -14,7 +14,6 @@ import (
 	"errors"
 	"hash"
 	"io"
-	"log"
 	"time"
 )
 

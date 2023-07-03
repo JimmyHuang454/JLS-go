@@ -71,7 +71,8 @@ func (l *listener) Accept() (net.Conn, error) {
 	if s.config.UseJLS {
 		err := s.Handshake()
 		if err != nil {
-			// forward at here.
+			// TODO:  forward at here.
+			s.Close()
 			return s, err
 		}
 	}

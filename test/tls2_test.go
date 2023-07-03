@@ -87,7 +87,7 @@ func TestWithSelfSignCert(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestJLS(t *testing.T) {
+func TestRightJLS(t *testing.T) {
 	cert, err := tls.X509KeyPair(certPem, keyPem)
 	assert.Nil(t, err)
 
@@ -106,13 +106,28 @@ func TestJLS(t *testing.T) {
 	assert.Nil(t, err)
 	err = conn.Close()
 	assert.Nil(t, err)
+}
 
-	return
-	conn, err = tls.Dial("tcp", "127.0.0.1:"+port,
+func TestWrongJLS(t *testing.T) {
+	cert, err := tls.X509KeyPair(certPem, keyPem)
+	assert.Nil(t, err)
+
+	cfg := &tls.Config{Certificates: []tls.Certificate{cert},
+		UseJLS: true, JLSPWD: []byte("abc"), JLSIV: []byte("abc")}
+	port := "2002"
+	listener, err := tls.Listen("tcp", ":"+port, cfg)
+	assert.Nil(t, err)
+
+	go func() {
+		inClient, err := listener.Accept()
+		assert.NotNil(t, err)
+		assert.Nil(t, inClient)
+	}()
+
+	conn, err := tls.Dial("tcp", "127.0.0.1:"+port,
 		&tls.Config{InsecureSkipVerify: false,
 			ServerName: "abc.com",
 			UseJLS:     true, JLSPWD: []byte("abc"), JLSIV: []byte("abcd")})
 	assert.NotNil(t, err)
-	err = conn.Close()
-	assert.Nil(t, err)
+	assert.Nil(t, conn)
 }
