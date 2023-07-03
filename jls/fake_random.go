@@ -21,7 +21,7 @@ func NewFakeRandom(PWD []byte, IV []byte) *FakeRandom {
 	iv := sha512.New()
 	iv.Write(IV)
 
-	return &FakeRandom{PWD: pwd.Sum(nil), IV: iv.Sum(nil), Random: make([]byte, 32), N: make([]byte, 16)}
+	return &FakeRandom{PWD: pwd.Sum(nil), IV: iv.Sum(nil)}
 }
 
 func (f *FakeRandom) Build() error {
@@ -33,8 +33,8 @@ func (f *FakeRandom) Build() error {
 	if err != nil {
 		return err
 	}
-	copy(f.Random, random)
-	copy(f.N, n)
+	f.Random = random
+	f.N = n
 	return nil
 }
 
@@ -43,7 +43,7 @@ func (f *FakeRandom) Check(random []byte) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	copy(f.Random, random)
-	copy(f.N, n)
+	f.Random = random
+	f.N = n
 	return true, nil
 }
