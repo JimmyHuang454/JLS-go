@@ -68,3 +68,6 @@ for true {
     inClient.Close()
 }
 ```
+
+### QUIC
+JLS 是支持 QUIC 的，因为 JLS 不依赖 SessionID，而 QUIC 对 TLS 中的 SessionID 有要求。以前的 crypto/tls 是不支持 0-RTT，所以 quic-go 是创建了 crypto/tls 的分支 qtls，以实现 quic 的 0-RTT，最近（2023 年）crypto/tls 加入了 0-RTT，但目前 quic-go 还在使用自己的 qtls。
