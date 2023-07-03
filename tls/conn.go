@@ -1486,7 +1486,25 @@ func (c *Conn) Handshake() error {
 func (c *Conn) HandshakeContext(ctx context.Context) error {
 	// Delegate to unexported method for named return
 	// without confusing documented signature.
-	return c.handshakeContext(ctx)
+
+	err := c.handshakeContext(ctx)
+	if !c.config.UseJLS {
+		return err
+	}
+
+	if c.isClient {
+		if err == nil && c.config.UseJLS && !c.IsJLS {
+			// it is a valid TLS Client but Not JLS,
+			// so we must act like a normal http request at here
+			// TODO:  act like a normal http request
+			return errors.New("not JLS")
+		}
+	} else if err != nil {
+		// server side
+		// TODO:  forward at here.
+		c.Close()
+	}
+	return err
 }
 
 func (c *Conn) handshakeContext(ctx context.Context) (ret error) {

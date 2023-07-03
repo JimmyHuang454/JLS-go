@@ -97,13 +97,21 @@ func TestRightJLS(t *testing.T) {
 	listener, err := tls.Listen("tcp", ":"+port, cfg)
 	assert.Nil(t, err)
 
-	go HandleClient(listener)
+	go func() {
+		inClient, err := listener.Accept()
+		assert.Nil(t, err)
+		buf := make([]byte, 200)
+		n, err := inClient.Read(buf)
+		assert.Equal(t, n, 1)
+		inClient.Close()
+	}()
 
 	conn, err := tls.Dial("tcp", "127.0.0.1:"+port,
 		&tls.Config{InsecureSkipVerify: false,
 			ServerName: "abc.com",
 			UseJLS:     true, JLSPWD: []byte("abc"), JLSIV: []byte("abc")})
 	assert.Nil(t, err)
+	conn.Write([]byte{1})
 	err = conn.Close()
 	assert.Nil(t, err)
 }

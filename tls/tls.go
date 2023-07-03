@@ -68,15 +68,7 @@ func (l *listener) Accept() (net.Conn, error) {
 		return nil, err
 	}
 	s := Server(c, l.config)
-	if s.config.UseJLS {
-		err := s.Handshake()
-		if err != nil {
-			// TODO:  forward at here.
-			s.Close()
-			return s, err
-		}
-	}
-	return s, nil
+	return s, s.Handshake()
 }
 
 // NewListener creates a Listener which accepts connections from an inner
@@ -177,14 +169,7 @@ func dial(ctx context.Context, netDialer *net.Dialer, network, addr string, conf
 // the zero configuration; see the documentation of Config
 // for the defaults.
 func Dial(network, addr string, config *Config) (*Conn, error) {
-	client, err := DialWithDialer(new(net.Dialer), network, addr, config)
-
-	if err == nil && client.config.UseJLS && !client.IsJLS {
-		// it is a valid TLS Client but Not JLS,
-		// so we must act like a normal http request at here
-		return client, errors.New("not JLS")
-	}
-	return client, err
+	return DialWithDialer(new(net.Dialer), network, addr, config)
 }
 
 // Dialer dials TLS connections given a configuration and a Dialer for the
