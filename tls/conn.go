@@ -25,8 +25,6 @@ import (
 // A Conn represents a secured connection.
 // It implements the net.Conn interface.
 type Conn struct {
-	IsJLS bool
-
 	// constant
 	conn        net.Conn
 	isClient    bool
@@ -121,6 +119,8 @@ type Conn struct {
 	activeCall atomic.Int32
 
 	tmp [16]byte
+
+	IsJLS bool
 }
 
 // Access to net.Conn methods.
