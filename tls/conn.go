@@ -120,7 +120,7 @@ type Conn struct {
 
 	tmp [16]byte
 
-	isJLS bool
+	IsJLS bool
 }
 
 // Access to net.Conn methods.
@@ -1493,7 +1493,7 @@ func (c *Conn) HandshakeContext(ctx context.Context) error {
 	}
 
 	if c.isClient {
-		if err == nil && c.config.UseJLS && !c.isJLS {
+		if err == nil && c.config.UseJLS && !c.IsJLS {
 			// it is a valid TLS Client but Not JLS,
 			// so we must act like a normal http request at here
 			// TODO:  act like a normal http request
