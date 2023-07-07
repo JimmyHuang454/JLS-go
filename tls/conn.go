@@ -11,15 +11,19 @@ import (
 	"context"
 	"crypto/cipher"
 	"crypto/subtle"
+	"crypto/tls"
 	"crypto/x509"
 	"errors"
 	"fmt"
 	"hash"
 	"io"
 	"net"
+	"net/http"
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"golang.org/x/net/http2"
 )
 
 // A Conn represents a secured connection.
@@ -1496,13 +1500,32 @@ func (c *Conn) HandshakeContext(ctx context.Context) error {
 		if err == nil && c.config.UseJLS && !c.IsJLS {
 			// it is a valid TLS Client but Not JLS,
 			// so we must act like a normal http request at here
-			// TODO:  act like a normal http request
+
+			defer c.Close()
+			client := &http.Client{
+				Transport: &http2.Transport{
+					DialTLSContext: func(ctx context.Context, network, addr string, config *tls.Config) (net.Conn, error) {
+						return c, nil
+					},
+				},
+			}
+			request, _ := http.NewRequest("GET", "https://"+c.config.ServerName, nil)
+			response, err := client.Do(request)
+			if err == nil {
+				_, _ = io.Copy(io.Discard, response.Body)
+				response.Body.Close()
+			}
 			return errors.New("not JLS")
 		}
 	} else if err != nil {
-		// server side
-		// TODO:  forward at here.
-		c.Close()
+		// forward at here.
+		server, err := net.Dial("tcp", c.config.ServerName+":443")
+		if err == nil {
+			defer server.Close()
+			defer c.Close()
+			go io.Copy(server, c)
+			io.Copy(c, server)
+		}
 	}
 	return err
 }

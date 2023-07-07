@@ -1,5 +1,7 @@
 package main
 
+import "C"
+
 import (
 	"log"
 
@@ -24,7 +26,8 @@ AwEHoUQDQgAEPR3tU2Fta9ktY+6P9G0cWO+0kETA6SFs38GecTyudlHz6xvCdz8q
 EKTcWGekdmdDPsHloRNtsiCa697B2O9IFA==
 -----END EC PRIVATE KEY-----`)
 
-func main() {
+//export GetKey
+func GetKey() bool {
 	log.SetFlags(log.Lshortfile)
 
 	conf := &tls.Config{
@@ -34,14 +37,14 @@ func main() {
 	conn, err := tls.Dial("tcp", "uif03.top:443", conf)
 	if err != nil {
 		log.Println(err)
-		return
+		return false
 	}
 	defer conn.Close()
 
 	n, err := conn.Write([]byte("GET http://uif03.top HTTP/1.1\r\nHost: uif03.top\r\n\r\n"))
 	if err != nil {
 		log.Println(n, err)
-		return
+		return false
 	}
 
 	buf := make([]byte, 2000)
@@ -49,10 +52,13 @@ func main() {
 		n, err = conn.Read(buf)
 		if err != nil {
 			log.Println(n, err)
-			return
+			return false
 		}
 
 		println(string(buf[:n]))
 		conn.Close()
 	}
+	return true
 }
+
+func main() {}
