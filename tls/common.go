@@ -791,6 +791,7 @@ type Config struct {
 	JLSIV  []byte
 
 	ForwardClientHello []byte
+	ClientHelloRecord []byte
 }
 
 func BuildZeroArray() []byte {

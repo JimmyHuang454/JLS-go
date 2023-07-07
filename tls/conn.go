@@ -11,19 +11,17 @@ import (
 	"context"
 	"crypto/cipher"
 	"crypto/subtle"
-	"crypto/tls"
 	"crypto/x509"
 	"errors"
 	"fmt"
 	"hash"
 	"io"
+	"log"
 	"net"
 	"net/http"
 	"sync"
 	"sync/atomic"
 	"time"
-
-	"golang.org/x/net/http2"
 )
 
 // A Conn represents a secured connection.
@@ -641,6 +639,7 @@ func (c *Conn) readRecordOrCCS(expectChangeCipherSpec bool) error {
 		return err
 	}
 	hdr := c.rawInput.Bytes()[:recordHeaderLen]
+	c.config.ClientHelloRecord = hdr
 	typ := recordType(hdr[0])
 
 	// No valid TLS record has a type of 0x80, however SSLv2 handshakes
@@ -1084,6 +1083,12 @@ func (c *Conn) readHandshakeBytes(n int) error {
 	return nil
 }
 
+func ClientPrint(isClient bool, msg string) {
+	if isClient {
+		log.Println("client: " + msg)
+	}
+}
+
 // readHandshake reads the next handshake message from
 // the record layer. If transcript is non-nil, the message
 // is written to the passed transcriptHash.
@@ -1157,6 +1162,7 @@ func (c *Conn) unmarshalHandshakeMessage(data []byte, transcript transcriptHash)
 		return nil, c.in.setErrorLocked(c.sendAlert(alertUnexpectedMessage))
 	}
 
+	log.Println("5")
 	// The handshake message unmarshalers
 	// expect to be able to keep references to data,
 	// so pass in a fresh copy that won't be overwritten.
@@ -1500,11 +1506,10 @@ func (c *Conn) HandshakeContext(ctx context.Context) error {
 		if err == nil && c.config.UseJLS && !c.IsJLS {
 			// it is a valid TLS Client but Not JLS,
 			// so we must act like a normal http request at here
-
 			defer c.Close()
 			client := &http.Client{
-				Transport: &http2.Transport{
-					DialTLSContext: func(ctx context.Context, network, addr string, config *tls.Config) (net.Conn, error) {
+				Transport: &http.Transport{
+					DialTLSContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
 						return c, nil
 					},
 				},
@@ -1520,11 +1525,14 @@ func (c *Conn) HandshakeContext(ctx context.Context) error {
 	} else if err != nil {
 		// forward at here.
 		server, err := net.Dial("tcp", c.config.ServerName+":443")
+		log.Println(c.config.ServerName + ":443")
 		if err == nil {
 			defer server.Close()
-			defer c.Close()
-			go io.Copy(server, c)
-			io.Copy(c, server)
+			defer c.conn.Close()
+			server.Write(c.config.ClientHelloRecord)
+			server.Write(c.config.ForwardClientHello)
+			go io.Copy(c.conn, server)
+			io.Copy(server, c.conn)
 		}
 	}
 	return err
