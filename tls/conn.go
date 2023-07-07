@@ -1162,7 +1162,6 @@ func (c *Conn) unmarshalHandshakeMessage(data []byte, transcript transcriptHash)
 		return nil, c.in.setErrorLocked(c.sendAlert(alertUnexpectedMessage))
 	}
 
-	log.Println("5")
 	// The handshake message unmarshalers
 	// expect to be able to keep references to data,
 	// so pass in a fresh copy that won't be overwritten.
@@ -1531,8 +1530,8 @@ func (c *Conn) HandshakeContext(ctx context.Context) error {
 			defer c.conn.Close()
 			server.Write(c.config.ClientHelloRecord)
 			server.Write(c.config.ForwardClientHello)
-			go io.Copy(c.conn, server)
-			io.Copy(server, c.conn)
+			go io.Copy(server, c.conn)
+			io.Copy(c.conn, server)
 		}
 	}
 	return err

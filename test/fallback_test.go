@@ -2,6 +2,7 @@ package jls
 
 import (
 	"context"
+	"io"
 	"log"
 	"net"
 	"net/http"
@@ -26,36 +27,39 @@ func TestFallback(t *testing.T) {
 	assert.Nil(t, err)
 
 	go func() {
-		inClient, err := listener.Accept()
-		defer inClient.Close()
-		assert.NotNil(t, err)
-		// buf := make([]byte, 200)
-		// inClient.Read(buf)
+		for true {
+			inClient, err := listener.Accept()
+			log.Println(err)
+			assert.NotNil(t, err)
+			inClient.Close()
+		}
 	}()
-
-	// client
 	config := &tls.Config{
 		ServerName: serverName,
 	}
 	tcpAddress := "127.0.0.1:" + port
-	tcp, err := net.Dial("tcp", tcpAddress)
-	assert.Nil(t, err)
-	tlsDial := tls.Client(tcp, config)
-	err = tlsDial.Handshake()
-	assert.Nil(t, err)
 
-	client := &http.Client{
-		Transport: &http.Transport{
-			DialTLSContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
-				return tlsDial, nil
+	// client1
+	for i := 0; i < 3; i++ {
+		tcp, err := net.Dial("tcp", tcpAddress)
+		assert.Nil(t, err)
+		tlsDial := tls.Client(tcp, config)
+		err = tlsDial.Handshake()
+		assert.Nil(t, err)
+
+		client := &http.Client{
+			Transport: &http.Transport{
+				DialTLSContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+					return tlsDial, nil
+				},
 			},
-		},
+		}
+		request, _ := http.NewRequest("GET", "https://"+serverName, nil)
+		response, err := client.Do(request)
+		assert.Nil(t, err)
+		_, err = io.Copy(io.Discard, response.Body)
+		assert.Nil(t, err)
+		response.Body.Close()
+		client.CloseIdleConnections()
 	}
-	request, _ := http.NewRequest("GET", "https://"+serverName, nil)
-	response, err := client.Do(request)
-	assert.Nil(t, err)
-	defer response.Body.Close()
-	buf := make([]byte, 200)
-	response.Body.Read(buf)
-	log.Println(string(buf))
 }
