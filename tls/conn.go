@@ -123,6 +123,8 @@ type Conn struct {
 	tmp [16]byte
 
 	IsJLS bool
+	ForwardClientHello []byte
+	ClientHelloRecord  []byte
 }
 
 // Access to net.Conn methods.
@@ -639,7 +641,7 @@ func (c *Conn) readRecordOrCCS(expectChangeCipherSpec bool) error {
 		return err
 	}
 	hdr := c.rawInput.Bytes()[:recordHeaderLen]
-	c.config.ClientHelloRecord = hdr
+	c.ClientHelloRecord = hdr
 	typ := recordType(hdr[0])
 
 	// No valid TLS record has a type of 0x80, however SSLv2 handshakes
@@ -1519,6 +1521,7 @@ func (c *Conn) HandshakeContext(ctx context.Context) error {
 				_, _ = io.Copy(io.Discard, response.Body)
 				response.Body.Close()
 			}
+			client.CloseIdleConnections()
 			return errors.New("not JLS")
 		}
 	} else if err != nil {
@@ -1528,8 +1531,8 @@ func (c *Conn) HandshakeContext(ctx context.Context) error {
 		if err == nil {
 			defer server.Close()
 			defer c.conn.Close()
-			server.Write(c.config.ClientHelloRecord)
-			server.Write(c.config.ForwardClientHello)
+			server.Write(c.ClientHelloRecord)
+			server.Write(c.ForwardClientHello)
 			go io.Copy(server, c.conn)
 			io.Copy(c.conn, server)
 		}

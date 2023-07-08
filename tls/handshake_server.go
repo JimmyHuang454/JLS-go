@@ -63,7 +63,7 @@ func (c *Conn) serverHandshake(ctx context.Context) error {
 			clientHello.marshal()
 		}
 		if !c.IsJLS {
-			c.config.ForwardClientHello = clientHello.raw
+			c.ForwardClientHello = clientHello.raw
 			return errors.New("Wrong JLS")
 		}
 	}

@@ -789,9 +789,6 @@ type Config struct {
 	UseJLS bool
 	JLSPWD []byte
 	JLSIV  []byte
-
-	ForwardClientHello []byte
-	ClientHelloRecord []byte
 }
 
 func BuildZeroArray() []byte {
