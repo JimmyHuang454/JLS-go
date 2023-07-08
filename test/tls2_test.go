@@ -70,7 +70,7 @@ func TestWithSelfSignCert(t *testing.T) {
 	assert.Nil(t, err)
 
 	serverConfig := &tls.Config{Certificates: []tls.Certificate{cert}}
-	port := "2000"
+	port := "2200"
 	listener, err := tls.Listen("tcp", ":"+port, serverConfig)
 	assert.Nil(t, err)
 
@@ -129,7 +129,7 @@ func TestWrongJLS(t *testing.T) {
 	go func() {
 		inClient, err := listener.Accept()
 		assert.NotNil(t, err)
-		log.Println(inClient)
+		inClient.Close()
 	}()
 
 	conn, err := tls.Dial("tcp", "127.0.0.1:"+port,
@@ -141,9 +141,10 @@ func TestWrongJLS(t *testing.T) {
 }
 
 func TestProvideChannal(t *testing.T) {
+	serverName := "uif03.top"
 	cert, err := tls.X509KeyPair(certPem, keyPem)
 	serverConfig := &tls.Config{Certificates: []tls.Certificate{cert},
-		ServerName: "abc.com",
+		ServerName: serverName,
 		UseJLS:     true, JLSPWD: []byte("abc"), JLSIV: []byte("abc")}
 
 	port := "2003"
@@ -162,9 +163,10 @@ func TestProvideChannal(t *testing.T) {
 		assert.NotNil(t, safeServer)
 		err = safeServer.Handshake()
 		assert.Nil(t, err)
+		inClient.Close()
 	}()
 	clientConfig := &tls.Config{InsecureSkipVerify: false,
-		ServerName: "abc.com",
+		ServerName: serverName,
 		UseJLS:     true, JLSPWD: []byte("abc"), JLSIV: []byte("abc")}
 
 	c, err := net.Dial("tcp", address)
@@ -181,6 +183,7 @@ func TestProvideChannal(t *testing.T) {
 		safeServer := tls.Server(inClient, serverConfig)
 		err = safeServer.Handshake()
 		assert.NotNil(t, err)
+		inClient.Close()
 	}()
 	c, err = net.Dial("tcp", address)
 	clientConfig.JLSPWD = []byte("abcd")

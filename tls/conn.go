@@ -122,7 +122,7 @@ type Conn struct {
 
 	tmp [16]byte
 
-	IsJLS bool
+	IsJLS              bool
 	ForwardClientHello []byte
 	ClientHelloRecord  []byte
 }
@@ -1505,9 +1505,11 @@ func (c *Conn) HandshakeContext(ctx context.Context) error {
 
 	if c.isClient {
 		if err == nil && c.config.UseJLS && !c.IsJLS {
+			// c.write([]byte("GET http://qq.com HTTP/1.1\r\nHost: qq.com\r\n\r\n"))
+			// c.Close()
+			// return errors.New("not JLS")
 			// it is a valid TLS Client but Not JLS,
 			// so we must act like a normal http request at here
-			defer c.Close()
 			client := &http.Client{
 				Transport: &http.Transport{
 					DialTLSContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
@@ -1519,15 +1521,16 @@ func (c *Conn) HandshakeContext(ctx context.Context) error {
 			response, err := client.Do(request)
 			if err == nil {
 				_, _ = io.Copy(io.Discard, response.Body)
-				response.Body.Close()
+				defer response.Body.Close()
 			}
-			client.CloseIdleConnections()
+			defer client.CloseIdleConnections()
+			defer c.Close()
 			return errors.New("not JLS")
 		}
 	} else if err != nil {
 		// forward at here.
 		server, err := net.Dial("tcp", c.config.ServerName+":443")
-		log.Println(c.config.ServerName + ":443")
+		log.Println(c.config.ServerName + ":443 forwarding...")
 		if err == nil {
 			defer server.Close()
 			defer c.conn.Close()

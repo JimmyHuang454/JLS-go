@@ -61,5 +61,6 @@ func TestFallback(t *testing.T) {
 		assert.Nil(t, err)
 		response.Body.Close()
 		client.CloseIdleConnections()
+		tcp.Close()
 	}
 }
