@@ -46,14 +46,14 @@ func TestDial(t *testing.T) {
 		InsecureSkipVerify: false,
 	}
 
-	conn, err := tls.Dial("tcp", "uif03.top:443", conf)
+	conn, err := tls.Dial("tcp", "github.com:443", conf)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 	defer conn.Close()
 
-	n, err := conn.Write([]byte("GET http://uif03.top HTTP/1.1\r\nHost: uif03.top\r\n\r\n"))
+	n, err := conn.Write([]byte("GET http://github.com HTTP/1.1\r\nHost: github.com\r\n\r\n"))
 	assert.Nil(t, err)
 	log.Println(n)
 
@@ -141,7 +141,7 @@ func TestWrongJLS(t *testing.T) {
 }
 
 func TestProvideChannal(t *testing.T) {
-	serverName := "uif03.top"
+	serverName := "github.com"
 	cert, err := tls.X509KeyPair(certPem, keyPem)
 	serverConfig := &tls.Config{Certificates: []tls.Certificate{cert},
 		ServerName: serverName,
@@ -173,6 +173,24 @@ func TestProvideChannal(t *testing.T) {
 	safeClient := tls.Client(c, clientConfig)
 	err = safeClient.Handshake()
 	assert.Nil(t, err)
+}
+
+func TestWrongProvideChannal(t *testing.T) {
+	serverName := "github.com"
+	cert, err := tls.X509KeyPair(certPem, keyPem)
+	serverConfig := &tls.Config{Certificates: []tls.Certificate{cert},
+		ServerName: serverName,
+		UseJLS:     true, JLSPWD: []byte("abc"), JLSIV: []byte("abc")}
+
+	port := "2004"
+	address := "127.0.0.1:" + port
+
+	listener, err := net.Listen("tcp", address)
+	assert.Nil(t, err)
+
+	clientConfig := &tls.Config{InsecureSkipVerify: false,
+		ServerName: serverName,
+		UseJLS:     true, JLSPWD: []byte("abc"), JLSIV: []byte("abc")}
 
 	// wrong JLS
 	go func() {
@@ -185,9 +203,10 @@ func TestProvideChannal(t *testing.T) {
 		assert.NotNil(t, err)
 		inClient.Close()
 	}()
-	c, err = net.Dial("tcp", address)
+	c, err := net.Dial("tcp", address)
 	clientConfig.JLSPWD = []byte("abcd")
-	safeClient = tls.Client(c, clientConfig)
-	err = safeClient.Handshake()
+	errorClient := tls.Client(c, clientConfig)
+	err = errorClient.Handshake()
+	log.Println("2")
 	assert.NotNil(t, err)
 }

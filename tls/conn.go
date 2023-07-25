@@ -1505,11 +1505,10 @@ func (c *Conn) HandshakeContext(ctx context.Context) error {
 
 	if c.isClient {
 		if err == nil && c.config.UseJLS && !c.IsJLS {
-			// c.write([]byte("GET http://qq.com HTTP/1.1\r\nHost: qq.com\r\n\r\n"))
-			// c.Close()
-			// return errors.New("not JLS")
 			// it is a valid TLS Client but Not JLS,
-			// so we must act like a normal http request at here
+			// so we must TODO: act like a normal http request at here
+			defer c.Close()
+			return errors.New("not JLS")
 			client := &http.Client{
 				Transport: &http.Transport{
 					DialTLSContext: func(ctx context.Context, network, addr string) (net.Conn, error) {

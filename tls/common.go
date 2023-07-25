@@ -799,16 +799,16 @@ func BuildZeroArray() []byte {
 	return zeroArray
 }
 
-func BuildFakeRandom(config *Config, keyShare []byte) ([]byte, error) {
-	iv := append(config.JLSIV, keyShare...)
+func BuildFakeRandom(config *Config, AuthData []byte) ([]byte, error) {
+	iv := append(config.JLSIV, AuthData...)
 	fakeRandom := jls.NewFakeRandom(config.JLSPWD, iv)
 
 	err := fakeRandom.Build()
 	return fakeRandom.Random, err
 }
 
-func CheckFakeRandom(config *Config, keyShare []byte, random []byte) (bool, error) {
-	iv := append(config.JLSIV, keyShare...)
+func CheckFakeRandom(config *Config, AuthData []byte, random []byte) (bool, error) {
+	iv := append(config.JLSIV, AuthData...)
 	fakeRandom := jls.NewFakeRandom(config.JLSPWD, iv)
 
 	IsValid, err := fakeRandom.Check(random)
