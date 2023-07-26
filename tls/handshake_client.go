@@ -238,16 +238,6 @@ func (c *Conn) clientHandshake(ctx context.Context) (err error) {
 
 	c.IsJLS = false
 	if c.config.UseJLS && len(serverHello.serverShare.data) != 0 {
-		// tempRandom := serverHello.random
-		// serverHello.random = BuildZeroArray()
-		// serverHello.raw = nil
-		// serverHello.marshal()
-		// c.IsJLS, _ = CheckFakeRandom(c.config, serverHello.raw, tempRandom)
-		// c.config.InsecureSkipVerify = c.IsJLS
-		// serverHello.raw = nil
-		// serverHello.random = tempRandom
-		// serverHello.marshal()
-
 		zeroArray := BuildZeroArray()
 		raw := make([]byte, len(serverHello.raw))
 		copy(raw, serverHello.raw)
