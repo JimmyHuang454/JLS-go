@@ -1,12 +1,21 @@
-# JLS-go （WIP）
+# JLS-go
+
 本仓库完整实现 JLS 第 3 版本。
 
+## 其他实现
+
+[vincentliu77/rustls-jls](https://github.com/vincentliu77/rustls-jls)
+
+[vincentliu77/quinn-jls](https://github.com/vincentliu77/quinn-jls)（推荐，支持 QUIC）
+
 ## 用法
+
 跟`crypto/tls`标准库一样，但多了一些选项。
 
-选项中可以自定义是否开启 0-RTT（默认关闭），比如说需要 quic 的 0-RTT，那么可以设置 SessionTicketsDisabled 为 false。需要特别注意，0-RTT 具有安全问题，不保证前向安全，不保证不会被重放攻击和特征识别，优点就是加上 quic 传输层，延迟很低，而且数据是加密的。
+选项中可以自定义是否开启 0-RTT（默认关闭），比如说需要 QUIC 的 0-RTT，那么可以设置 SessionTicketsDisabled 为 false。需要特别注意，0-RTT 具有安全问题，不保证前向安全，不保证不会被重放攻击和特征识别，优点就是加上 QUIC 传输层，延迟很低，而且数据是无法被解密。
 
 ### Client
+
 ```go
 import (
 	"github.com/JimmyHuang454/JLS-go/tls"
@@ -24,6 +33,7 @@ n, _ := conn.Read(buffer)
 ```
 
 ### Server
+
 ```go
 import (
 	"github.com/JimmyHuang454/JLS-go/tls"
@@ -57,12 +67,8 @@ cfg := &tls.Config{Certificates: []tls.Certificate{cert},
 listener, err := tls.Listen("tcp", ":443", cfg)
 assert.Nil(t, err)
 
-for true {
-    inClient, err := listener.Accept()
-    if err != nil {
-        log.Println(err)
-        return
-    }
+inClient, err := listener.Accept()
+if err == nil {
     buf := make([]byte, 200)
     _, err = inClient.Read(buf)
     inClient.Close()
@@ -71,5 +77,5 @@ for true {
 
 更多用法，参考 [测试用例](https://github.com/JimmyHuang454/JLS-go/tree/master/test)
 
-### QUIC
-JLS 是支持 QUIC 的，因为 JLS 不依赖 SessionID，而 QUIC 对 TLS 中的 SessionID 有要求。以前的 crypto/tls 是不支持 0-RTT，所以 quic-go 是创建了 crypto/tls 的分支 qtls，以实现 quic 的 0-RTT，最近（2023 年）crypto/tls 加入了 0-RTT，但目前 quic-go 还在使用自己的 qtls。
+<!-- ### QUIC -->
+<!-- JLS 是支持 QUIC 的，因为 JLS 不依赖 SessionID，而 QUIC 对 TLS 中的 SessionID 有要求。以前的 crypto/tls 是不支持 0-RTT，所以 quic-go 是创建了 crypto/tls 的分支 qtls，以实现 quic 的 0-RTT，最近（2023 年）crypto/tls 加入了 0-RTT，但目前 quic-go 还在使用自己的 qtls。 -->

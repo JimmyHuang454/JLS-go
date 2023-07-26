@@ -32,6 +32,17 @@ func TestWrongClient(t *testing.T) {
 		UseJLS:     true, JLSPWD: []byte("1"), JLSIV: []byte("2")}
 	address := "127.0.0.1:4443"
 	c, err := tls.Dial("tcp", address, clientConfig)
-	defer c.Close()
 	assert.NotNil(t, err)
+	c.Close()
+}
+
+func TestTLSClient(t *testing.T) {
+	serverName := "github.com"
+	clientConfig := &tls.Config{InsecureSkipVerify: false,
+		ServerName: serverName,
+		UseJLS:     false}
+	address := "127.0.0.1:4443"
+	c, err := tls.Dial("tcp", address, clientConfig)
+	assert.NotNil(t, err)
+	c.Close()
 }

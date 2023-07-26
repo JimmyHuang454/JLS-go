@@ -180,7 +180,7 @@ func TestWrongProvideChannal(t *testing.T) {
 	cert, err := tls.X509KeyPair(certPem, keyPem)
 	serverConfig := &tls.Config{Certificates: []tls.Certificate{cert},
 		ServerName: serverName,
-		UseJLS:     true, JLSPWD: []byte("abc"), JLSIV: []byte("abc")}
+		UseJLS:     true, JLSPWD: []byte("1"), JLSIV: []byte("2")}
 
 	port := "2004"
 	address := "127.0.0.1:" + port
@@ -190,7 +190,7 @@ func TestWrongProvideChannal(t *testing.T) {
 
 	clientConfig := &tls.Config{InsecureSkipVerify: false,
 		ServerName: serverName,
-		UseJLS:     true, JLSPWD: []byte("abc"), JLSIV: []byte("abc")}
+		UseJLS:     true, JLSPWD: []byte("3"), JLSIV: []byte("4")}
 
 	// wrong JLS
 	go func() {
@@ -204,9 +204,8 @@ func TestWrongProvideChannal(t *testing.T) {
 		inClient.Close()
 	}()
 	c, err := net.Dial("tcp", address)
-	clientConfig.JLSPWD = []byte("abcd")
 	errorClient := tls.Client(c, clientConfig)
 	err = errorClient.Handshake()
-	log.Println("2")
 	assert.NotNil(t, err)
+	log.Println(err)
 }
