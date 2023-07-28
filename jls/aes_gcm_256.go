@@ -6,7 +6,7 @@ import (
 	"errors"
 )
 
-const ivLen = 64 // bytes
+const ivLen = 32 // bytes
 
 func Encrypt(nonce []byte, plaintext []byte, key []byte) ([]byte, error) {
 	if len(nonce) != ivLen {

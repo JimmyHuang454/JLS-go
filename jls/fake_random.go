@@ -17,7 +17,6 @@ package jls
 import (
 	"crypto/rand"
 	"crypto/sha256"
-	"crypto/sha512"
 	"io"
 )
 
@@ -32,7 +31,7 @@ type FakeRandom struct {
 func NewFakeRandom(PWD []byte, IV []byte) *FakeRandom {
 	pwd := sha256.New()
 	pwd.Write(PWD)
-	iv := sha512.New()
+	iv := sha256.New()
 	iv.Write(IV)
 
 	return &FakeRandom{PWD: pwd.Sum(nil), IV: iv.Sum(nil)}

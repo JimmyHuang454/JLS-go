@@ -2,7 +2,6 @@ package jls
 
 import (
 	"crypto/sha256"
-	"crypto/sha512"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -18,7 +17,7 @@ func TestAESGCM(t *testing.T) {
 	key.Write([]byte("key"))
 	plainText := []byte("cipherText")
 
-	nonce := sha512.New()
+	nonce := sha256.New()
 	nonce.Write([]byte("nonce"))
 
 	cipherTextAndMac, err = Encrypt(nonce.Sum(nil), plainText, key.Sum(nil))

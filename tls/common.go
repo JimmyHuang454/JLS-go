@@ -801,7 +801,8 @@ func BuildZeroArray() []byte {
 
 func BuildFakeRandom(config *Config, AuthData []byte) ([]byte, error) {
 	iv := append(config.JLSIV, AuthData...)
-	fakeRandom := jls.NewFakeRandom(config.JLSPWD, iv)
+	pwd := append(config.JLSPWD, AuthData...)
+	fakeRandom := jls.NewFakeRandom(pwd, iv)
 
 	err := fakeRandom.Build()
 	return fakeRandom.Random, err
@@ -809,7 +810,8 @@ func BuildFakeRandom(config *Config, AuthData []byte) ([]byte, error) {
 
 func CheckFakeRandom(config *Config, AuthData []byte, random []byte) (bool, error) {
 	iv := append(config.JLSIV, AuthData...)
-	fakeRandom := jls.NewFakeRandom(config.JLSPWD, iv)
+	pwd := append(config.JLSPWD, AuthData...)
+	fakeRandom := jls.NewFakeRandom(pwd, iv)
 
 	IsValid, err := fakeRandom.Check(random)
 	return IsValid, err
