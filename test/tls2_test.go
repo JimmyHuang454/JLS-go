@@ -46,14 +46,14 @@ func TestDial(t *testing.T) {
 		InsecureSkipVerify: false,
 	}
 
-	conn, err := tls.Dial("tcp", "github.com:443", conf)
+	conn, err := tls.Dial("tcp", "apple.com:443", conf)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 	defer conn.Close()
 
-	n, err := conn.Write([]byte("GET http://github.com HTTP/1.1\r\nHost: github.com\r\n\r\n"))
+	n, err := conn.Write([]byte("GET http://apple.com HTTP/1.1\r\nHost: apple.com\r\n\r\n"))
 	assert.Nil(t, err)
 	log.Println(n)
 
@@ -141,7 +141,7 @@ func TestWrongJLS(t *testing.T) {
 }
 
 func TestProvideChannal(t *testing.T) {
-	serverName := "github.com"
+	serverName := "apple.com"
 	cert, err := tls.X509KeyPair(certPem, keyPem)
 	serverConfig := &tls.Config{Certificates: []tls.Certificate{cert},
 		ServerName: serverName,
@@ -176,7 +176,7 @@ func TestProvideChannal(t *testing.T) {
 }
 
 func TestWrongProvideChannal(t *testing.T) {
-	serverName := "github.com"
+	serverName := "apple.com"
 	cert, err := tls.X509KeyPair(certPem, keyPem)
 	serverConfig := &tls.Config{Certificates: []tls.Certificate{cert},
 		ServerName: serverName,

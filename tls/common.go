@@ -792,8 +792,9 @@ type Config struct {
 }
 
 func BuildZeroArray() []byte {
-	zeroArray := make([]byte, 32)
-	for i := 0; i < 32; i++ {
+	const byteLen = 32
+	zeroArray := make([]byte, byteLen)
+	for i := 0; i < byteLen; i++ {
 		zeroArray[i] = 0
 	}
 	return zeroArray

@@ -13,7 +13,7 @@ import (
 )
 
 func TestFallback(t *testing.T) {
-	serverName := "github.com"
+	serverName := "www.apple.com"
 
 	// server
 	cert, err := tls.X509KeyPair(certPem, keyPem)

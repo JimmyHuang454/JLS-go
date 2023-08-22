@@ -1528,6 +1528,7 @@ func (c *Conn) HandshakeContext(ctx context.Context) error {
 		}
 	} else if err != nil {
 		// forward at here.
+		// TODO: if we using sing-box, we need to use its forward method, since it may take over traffic by Tun.
 		server, err := net.Dial("tcp", c.config.ServerName+":443")
 		log.Println(c.config.ServerName + ":443 forwarding...")
 		if err == nil {
