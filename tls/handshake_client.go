@@ -205,9 +205,9 @@ func (c *Conn) clientHandshake(ctx context.Context) (err error) {
 
 	if c.config.UseJLS {
 		hello.random = BuildZeroArray()
-		hello.marshal()
-		hello.random, err = BuildFakeRandom(c.config, hello.raw)
-		hello.raw = nil
+		withoutBinder, _ := hello.marshalWithoutBinders()
+		hello.random, err = BuildFakeRandom(c.config, withoutBinder)
+		hello.raw = nil // marshal will be cached
 	}
 
 	if _, err := c.writeHandshakeRecord(hello, nil); err != nil {

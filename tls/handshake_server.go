@@ -48,8 +48,9 @@ func (c *Conn) serverHandshake(ctx context.Context) error {
 	c.IsJLS = false
 	if c.config.UseJLS {
 		zeroArray := BuildZeroArray()
-		raw := make([]byte, len(clientHello.raw))
-		copy(raw, clientHello.raw)
+		withoutBinder, _ := clientHello.marshalWithoutBinders()
+		raw := make([]byte, len(withoutBinder))
+		copy(raw, withoutBinder)
 		copy(raw[6:], zeroArray)
 
 		c.IsJLS, _ = CheckFakeRandom(c.config, raw, clientHello.random)
