@@ -1504,7 +1504,7 @@ func (c *Conn) HandshakeContext(ctx context.Context) error {
 	}
 
 	if c.isClient {
-		if err == nil && c.config.UseJLS && !c.IsJLS {
+		if !c.IsJLS && err == nil {
 			// it is a valid TLS Client but Not JLS,
 			// so we must TODO: act like a normal http request at here
 			defer c.Close()
