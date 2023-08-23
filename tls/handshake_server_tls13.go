@@ -64,13 +64,10 @@ func (hs *serverHandshakeStateTLS13) handshake() error {
 
 	if hs.c.config.UseJLS && len(hs.hello.serverShare.data) != 0 {
 		hs.hello.random = BuildZeroArray()
-		hs.hello.raw = nil
 		hs.hello.marshal()
 
 		hs.hello.random, _ = BuildFakeRandom(hs.c.config, hs.hello.raw)
-
-		hs.hello.raw = nil
-		hs.hello.marshal()
+		copy(hs.hello.raw[6:], hs.hello.random)
 	}
 
 	if err := hs.sendServerParameters(); err != nil {
