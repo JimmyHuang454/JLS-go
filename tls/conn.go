@@ -1509,7 +1509,7 @@ func (c *Conn) HandshakeContext(ctx context.Context) error {
 			return errors.New("not JLS")
 			// so we must TODO: act like a normal http request at here
 		}
-	} else if err != nil {
+	} else if err != nil && !c.IsValidJLS {
 		// It is not JLS. Forward at here.
 		// TODO: if we using sing-box, we need to use its forward method, since it may take over traffic by Tun.
 		server, err := net.Dial("tcp", c.config.ServerName+":443")
