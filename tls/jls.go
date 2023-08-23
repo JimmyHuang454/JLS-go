@@ -24,15 +24,17 @@ func JLSHandler(c *Conn, tlsError error) error {
 	} else if tlsError != nil && !c.IsValidJLS {
 		// It is not JLS. Forward at here.
 		// TODO: if we using sing-box, we need to use its forward method, since it may take over traffic by Tun.
-		server, forwardError := net.Dial("tcp", c.config.ServerName+":443")
-		fmt.Println(c.config.ServerName + ":443 forwarding...")
 		defer c.conn.Close()
-		if forwardError == nil {
-			defer server.Close()
-			server.Write(c.ClientHelloRecord)
-			server.Write(c.ForwardClientHello)
-			go io.Copy(server, c.conn)
-			io.Copy(c.conn, server)
+		if c.config.ServerName != "" {
+			server, forwardError := net.Dial("tcp", c.config.ServerName+":443")
+			fmt.Println(c.config.ServerName + ":443 forwarding...")
+			if forwardError == nil {
+				defer server.Close()
+				server.Write(c.ClientHelloRecord)
+				server.Write(c.ForwardClientHello)
+				go io.Copy(server, c.conn)
+				io.Copy(c.conn, server)
+			}
 		}
 	}
 	return tlsError
