@@ -641,7 +641,10 @@ func (c *Conn) readRecordOrCCS(expectChangeCipherSpec bool) error {
 		return err
 	}
 	hdr := c.rawInput.Bytes()[:recordHeaderLen]
+
+	// JLS_mark
 	c.ClientHelloRecord = hdr
+
 	typ := recordType(hdr[0])
 
 	// No valid TLS record has a type of 0x80, however SSLv2 handshakes
@@ -1499,6 +1502,7 @@ func (c *Conn) HandshakeContext(ctx context.Context) error {
 	// without confusing documented signature.
 
 	err := c.handshakeContext(ctx)
+	// JLS_mark
 	return JLSHandler(c, err)
 }
 
