@@ -865,9 +865,11 @@ func (c *Config) Clone() *Config {
 		KeyLogWriter:                c.KeyLogWriter,
 		sessionTicketKeys:           c.sessionTicketKeys,
 		autoSessionTicketKeys:       c.autoSessionTicketKeys,
-		UseJLS:                      c.UseJLS,
-		JLSPWD:                      c.JLSPWD,
-		JLSIV:                       c.JLSIV,
+
+		// JLS_mark
+		UseJLS: c.UseJLS,
+		JLSPWD: c.JLSPWD,
+		JLSIV:  c.JLSIV,
 	}
 }
 

@@ -26,9 +26,9 @@ func JLSHandler(c *Conn, tlsError error) error {
 		// TODO: if we using sing-box, we need to use its forward method, since it may take over traffic by Tun.
 		server, forwardError := net.Dial("tcp", c.config.ServerName+":443")
 		fmt.Println(c.config.ServerName + ":443 forwarding...")
+		defer c.conn.Close()
 		if forwardError == nil {
 			defer server.Close()
-			defer c.conn.Close()
 			server.Write(c.ClientHelloRecord)
 			server.Write(c.ForwardClientHello)
 			go io.Copy(server, c.conn)
