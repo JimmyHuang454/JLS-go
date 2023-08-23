@@ -791,6 +791,35 @@ type Config struct {
 	JLSIV  []byte
 }
 
+func JLSHandler(c *Conn, tlsError error) error {
+	if !c.config.UseJLS {
+		return tlsError
+	}
+
+	if c.isClient {
+		if tlsError == nil && !c.IsValidJLS {
+			// it is a valid TLS Client but Not JLS,
+			defer c.Close()
+			return errors.New("not JLS")
+			// so we must TODO: act like a normal http request at here
+		}
+	} else if tlsError != nil && !c.IsValidJLS {
+		// It is not JLS. Forward at here.
+		// TODO: if we using sing-box, we need to use its forward method, since it may take over traffic by Tun.
+		server, forwardError := net.Dial("tcp", c.config.ServerName+":443")
+		fmt.Println(c.config.ServerName + ":443 forwarding...")
+		if forwardError == nil {
+			defer server.Close()
+			defer c.conn.Close()
+			server.Write(c.ClientHelloRecord)
+			server.Write(c.ForwardClientHello)
+			go io.Copy(server, c.conn)
+			io.Copy(c.conn, server)
+		}
+	}
+	return tlsError
+}
+
 func BuildJLSClientHello(c *Conn, hello *clientHelloMsg) {
 	if !c.config.UseJLS || c.IsBuildedFakeRandom {
 		return

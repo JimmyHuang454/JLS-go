@@ -121,10 +121,10 @@ type Conn struct {
 
 	tmp [16]byte
 
-	IsValidJLS         bool
-	IsBuildedFakeRandom  bool
-	ForwardClientHello []byte
-	ClientHelloRecord  []byte
+	IsValidJLS          bool
+	IsBuildedFakeRandom bool
+	ForwardClientHello  []byte
+	ClientHelloRecord   []byte
 }
 
 // Access to net.Conn methods.
@@ -1499,32 +1499,7 @@ func (c *Conn) HandshakeContext(ctx context.Context) error {
 	// without confusing documented signature.
 
 	err := c.handshakeContext(ctx)
-	if !c.config.UseJLS {
-		return err
-	}
-
-	if c.isClient {
-		if err == nil && !c.IsValidJLS {
-			// it is a valid TLS Client but Not JLS,
-			defer c.Close()
-			return errors.New("not JLS")
-			// so we must TODO: act like a normal http request at here
-		}
-	} else if err != nil && !c.IsValidJLS {
-		// It is not JLS. Forward at here.
-		// TODO: if we using sing-box, we need to use its forward method, since it may take over traffic by Tun.
-		server, err := net.Dial("tcp", c.config.ServerName+":443")
-		log.Println(c.config.ServerName + ":443 forwarding...")
-		if err == nil {
-			defer server.Close()
-			defer c.conn.Close()
-			server.Write(c.ClientHelloRecord)
-			server.Write(c.ForwardClientHello)
-			go io.Copy(server, c.conn)
-			io.Copy(c.conn, server)
-		}
-	}
-	return err
+	return JLSHandler(c, err)
 }
 
 func (c *Conn) handshakeContext(ctx context.Context) (ret error) {
