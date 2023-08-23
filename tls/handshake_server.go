@@ -45,7 +45,7 @@ func (c *Conn) serverHandshake(ctx context.Context) error {
 		return err
 	}
 
-	c.IsJLS = false
+	c.IsValidJLS = false
 	if c.config.UseJLS {
 		zeroArray := BuildZeroArray()
 		withoutBinder, _ := clientHello.marshalWithoutBinders()
@@ -53,8 +53,8 @@ func (c *Conn) serverHandshake(ctx context.Context) error {
 		copy(raw, withoutBinder)
 		copy(raw[6:], zeroArray)
 
-		c.IsJLS, _ = CheckFakeRandom(c.config, raw, clientHello.random)
-		if !c.IsJLS || c.vers != VersionTLS13 {
+		c.IsValidJLS, _ = CheckFakeRandom(c.config, raw, clientHello.random)
+		if !c.IsValidJLS || c.vers != VersionTLS13 {
 			c.ForwardClientHello = clientHello.raw
 			return errors.New("Wrong JLS")
 		}

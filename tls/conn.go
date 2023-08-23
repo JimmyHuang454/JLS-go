@@ -18,7 +18,6 @@ import (
 	"io"
 	"log"
 	"net"
-	"net/http"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -122,7 +121,7 @@ type Conn struct {
 
 	tmp [16]byte
 
-	IsJLS              bool
+	IsValidJLS         bool
 	ForwardClientHello []byte
 	ClientHelloRecord  []byte
 }
@@ -1504,7 +1503,7 @@ func (c *Conn) HandshakeContext(ctx context.Context) error {
 	}
 
 	if c.isClient {
-		if !c.IsJLS && err == nil {
+		if err == nil && !c.IsValidJLS {
 			// it is a valid TLS Client but Not JLS,
 			defer c.Close()
 			return errors.New("not JLS")
