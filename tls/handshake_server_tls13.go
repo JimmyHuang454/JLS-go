@@ -62,13 +62,7 @@ func (hs *serverHandshakeStateTLS13) handshake() error {
 	}
 	c.buffering = true
 
-	if hs.c.config.UseJLS && len(hs.hello.serverShare.data) != 0 {
-		hs.hello.random = BuildZeroArray()
-		hs.hello.marshal()
-
-		hs.hello.random, _ = BuildFakeRandom(hs.c.config, hs.hello.raw)
-		copy(hs.hello.raw[6:], hs.hello.random)
-	}
+	BuildJLSServerHello(c, hs.hello)
 
 	if err := hs.sendServerParameters(); err != nil {
 		return err

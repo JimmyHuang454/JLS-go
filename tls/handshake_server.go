@@ -16,7 +16,6 @@ import (
 	"fmt"
 	"hash"
 	"io"
-	"log"
 	"time"
 )
 
@@ -45,22 +44,9 @@ func (c *Conn) serverHandshake(ctx context.Context) error {
 		return err
 	}
 
-	c.IsValidJLS = false
-	if c.config.UseJLS {
-		zeroArray := BuildZeroArray()
-		withoutBinder, _ := clientHello.marshalWithoutBinders()
-		raw := make([]byte, len(withoutBinder))
-		copy(raw, withoutBinder)
-		copy(raw[6:], zeroArray)
-
-		c.IsValidJLS, _ = CheckFakeRandom(c.config, raw, clientHello.random)
-		if !c.IsValidJLS || c.vers != VersionTLS13 {
-			c.ForwardClientHello = clientHello.raw
-			return errors.New("Wrong JLS")
-		}
-		if len(clientHello.keyShares) == 0 {
-			log.Println("JLS missing keyShare can be not safty.")
-		}
+	if isValid, err := CheckJLSClientHello(c, clientHello); !isValid && err != nil {
+		fmt.Println(err)
+		return err
 	}
 
 	if c.vers == VersionTLS13 {

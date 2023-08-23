@@ -203,12 +203,7 @@ func (c *Conn) clientHandshake(ctx context.Context) (err error) {
 		}()
 	}
 
-	if c.config.UseJLS {
-		hello.random = BuildZeroArray()
-		withoutBinder, _ := hello.marshalWithoutBinders()
-		hello.random, err = BuildFakeRandom(c.config, withoutBinder)
-		hello.raw = nil // marshal will be cached
-	}
+	BuildJLSClientHello(c, hello)
 
 	if _, err := c.writeHandshakeRecord(hello, nil); err != nil {
 		return err
@@ -236,16 +231,7 @@ func (c *Conn) clientHandshake(ctx context.Context) (err error) {
 		return unexpectedMessageError(serverHello, msg)
 	}
 
-	c.IsValidJLS = false
-	if c.config.UseJLS && len(serverHello.serverShare.data) != 0 {
-		zeroArray := BuildZeroArray()
-		raw := make([]byte, len(serverHello.raw))
-		copy(raw, serverHello.raw)
-		copy(raw[6:], zeroArray)
-
-		c.IsValidJLS, _ = CheckFakeRandom(c.config, raw, serverHello.random)
-		c.config.InsecureSkipVerify = c.IsValidJLS
-	}
+	CheckJLSServerHello(c, serverHello)
 
 	if err := c.pickTLSVersion(serverHello); err != nil {
 		return err
@@ -421,6 +407,7 @@ func (c *Conn) loadSession(hello *clientHelloMsg) (
 	if err != nil {
 		return nil, nil, nil, err
 	}
+	BuildJLSClientHello(c, hello)
 	transcript.Write(helloBytes)
 	pskBinders := [][]byte{cipherSuite.finishedHash(binderKey, transcript)}
 	if err := hello.updateBinders(pskBinders); err != nil {

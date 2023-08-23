@@ -122,6 +122,7 @@ type Conn struct {
 	tmp [16]byte
 
 	IsValidJLS         bool
+	IsBuildedFakeRandom  bool
 	ForwardClientHello []byte
 	ClientHelloRecord  []byte
 }
