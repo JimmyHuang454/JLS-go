@@ -1506,28 +1506,12 @@ func (c *Conn) HandshakeContext(ctx context.Context) error {
 	if c.isClient {
 		if !c.IsJLS && err == nil {
 			// it is a valid TLS Client but Not JLS,
+			defer c.Close()
+			return errors.New("not JLS")
 			// so we must TODO: act like a normal http request at here
-			defer c.Close()
-			return errors.New("not JLS")
-			client := &http.Client{
-				Transport: &http.Transport{
-					DialTLSContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
-						return c, nil
-					},
-				},
-			}
-			request, _ := http.NewRequest("GET", "https://"+c.config.ServerName, nil)
-			response, err := client.Do(request)
-			if err == nil {
-				_, _ = io.Copy(io.Discard, response.Body)
-				defer response.Body.Close()
-			}
-			defer client.CloseIdleConnections()
-			defer c.Close()
-			return errors.New("not JLS")
 		}
 	} else if err != nil {
-		// forward at here.
+		// It is not JLS. Forward at here.
 		// TODO: if we using sing-box, we need to use its forward method, since it may take over traffic by Tun.
 		server, err := net.Dial("tcp", c.config.ServerName+":443")
 		log.Println(c.config.ServerName + ":443 forwarding...")
