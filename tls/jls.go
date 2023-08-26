@@ -32,8 +32,10 @@ func JLSHandler(c *Conn, tlsError error) error {
 				defer server.Close()
 				server.Write(c.ClientHelloRecord)
 				server.Write(c.ForwardClientHello)
+				c.ClientHelloRecord = nil // improve memory.
+				c.ForwardClientHello = nil
 				go io.Copy(server, c.conn)
-				io.Copy(c.conn, server)
+				io.Copy(c.conn, server) // block until forward finish.
 			}
 		}
 	}
