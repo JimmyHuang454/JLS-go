@@ -37,3 +37,17 @@ func TestAESGCM(t *testing.T) {
 	assert.NotNil(t, err)
 	assert.Empty(t, res)
 }
+
+func TestSeq(t *testing.T) {
+	key := sha256.New()
+	key.Write([]byte("1"))
+	plainText := []byte("3")
+
+	nonce := sha256.New()
+	nonce.Write([]byte("2"))
+
+	cipherTextAndMac, _ := Encrypt(nonce.Sum(nil), plainText, key.Sum(nil))
+	temp := make([]byte, 1)
+	temp[0] = 36
+	assert.Equal(t, cipherTextAndMac[:1], temp)
+}
