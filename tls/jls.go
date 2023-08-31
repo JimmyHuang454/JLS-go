@@ -21,7 +21,7 @@ func JLSHandler(c *Conn, tlsError error) error {
 			return errors.New("not JLS")
 			// so we must TODO: act like a normal http request at here
 		}
-	} else if tlsError != nil && !c.IsValidJLS {
+	} else if tlsError != nil && !c.IsValidJLS && c.quic == nil {
 		// It is not JLS. Forward at here.
 		// TODO: if we using sing-box, we need to use its forward method, since it may take over traffic by Tun.
 		defer c.conn.Close()
