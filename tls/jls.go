@@ -18,7 +18,7 @@ func JLSHandler(c *Conn, tlsError error) error {
 		if tlsError == nil && !c.IsValidJLS {
 			// it is a valid TLS Client but Not JLS,
 			defer c.Close()
-			return errors.New("not JLS")
+			return JLSError("invalid.")
 			// so we must TODO: act like a normal http request at here
 		}
 	} else if tlsError != nil && !c.IsValidJLS && c.quic == nil {
@@ -85,13 +85,13 @@ func CheckJLSServerHello(c *Conn, serverHello *serverHelloMsg) {
 func CheckJLSClientHello(c *Conn, clientHello *clientHelloMsg) (bool, error) {
 	c.IsValidJLS = false
 	if !c.config.UseJLS {
-		return true, errors.New("disable JLS.") // == TLS.
+		return true, JLSError("disable JLS.") // == TLS.
 	}
 	zeroArray := BuildZeroArray()
 	withoutBinder, err := clientHello.marshalWithoutBinders()
 	c.ForwardClientHello = clientHello.raw
 	if err != nil {
-		return false, errors.New("failed to get clientHello raw bytes.")
+		return false, JLSError("failed to get clientHello raw bytes.")
 	}
 	raw := make([]byte, len(withoutBinder))
 	copy(raw, withoutBinder)
@@ -99,10 +99,10 @@ func CheckJLSClientHello(c *Conn, clientHello *clientHelloMsg) (bool, error) {
 
 	c.IsValidJLS, err = CheckFakeRandom(c.config, raw, clientHello.random)
 	if err != nil {
-		return false, errors.New("failed to check fakeRandom.")
+		return false, JLSError("failed to check fakeRandom.")
 	}
 	if !c.IsValidJLS || c.vers != VersionTLS13 {
-		return false, errors.New("wrong fakeRandom.")
+		return false, JLSError("wrong fakeRandom.")
 	}
 	if len(clientHello.keyShares) == 0 {
 		fmt.Println("JLS missing keyShare can be not safty.")
@@ -135,4 +135,8 @@ func CheckFakeRandom(config *Config, AuthData []byte, random []byte) (bool, erro
 
 	IsValid, err := fakeRandom.Check(random)
 	return IsValid, err
+}
+
+func JLSError(text string) error {
+	return errors.New("[JLS] " + text)
 }
